@@ -2,7 +2,7 @@
 bl_info = {
     "name": "PBR Materials",
     "description": "PBR Materials and procedural textures",
-    "version": (3, 3),
+    "version": (3, 4),
     "blender": (2, 80, 0),
     "author": "Wolf & Nathan Craddock",
     "location": "Material Properties and Shader Editor",
@@ -23,9 +23,8 @@ from . import addon_updater_ops
 
 
 # Materials panel
-class PBRMaterialPanel(Panel):
+class PBRMATERIAL_PT_Panel(Panel):
 	bl_label = "PBR Materials"
-	bl_idname = "pbr_previews"
 	bl_space_type = 'PROPERTIES'
 	bl_region_type = 'WINDOW'
 	bl_context = "material"
@@ -71,7 +70,7 @@ class PBRMaterialPanel(Panel):
 
 
 # Material Nodes panel
-class PBRMaterialPanelNode(Panel):
+class PBRMATERIAL_PT_PanelNode(Panel):
 	bl_label = "PBR Material Nodes"
 	bl_category = "PBR Materials"
 	bl_space_type = 'NODE_EDITOR'
@@ -933,8 +932,8 @@ preview_collections_tex = {}
 ###############################################################################################
 
 classes = (
-	PBRMaterialPanel,
-	PBRMaterialPanelNode,
+	PBRMATERIAL_PT_Panel,
+	PBRMATERIAL_PT_PanelNode,
 	PBRMaterialSettings,
 	PBRMaterialsPreferences
 	)
