@@ -1,4 +1,3 @@
 # PBR Materials
-PBR Materials addon for Blender
-
-You are free to use this addon for anything you want
+PBR Materials is an addon with physically based materials.
+You are free to use this addon for anything you want.
