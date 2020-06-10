@@ -1,25 +1,25 @@
-# Info
+# Addon Info
 bl_info = {
     "name": "PBR Materials",
-    "description": "PBR Materials and procedural textures",
-    "version": (3, 4),
-    "blender": (2, 80, 0),
-    "author": "Wolf & Nathan Craddock",
+    "description": "PBR materials",
+    "author": "Wolf <wolf.art3d@gmail.com>",
+    "version": (3, 5),
+    "blender": (2, 83, 0),
     "location": "Material Properties and Shader Editor",
-	"wiki_url": "https://3d-wolf.com/products/materials.html",
-    "tracker_url": "https://3d-wolf.com/products/materials.html",
+    "doc_url": "https://3d-wolf.com/products/materials",
+    "tracker_url": "https://3d-wolf.com/products/materials",
     "support": "COMMUNITY",
-    "category": "Material"
-}
+    "category": "Material",
+    }
 
 
 # Libraries
-import bpy
 import os
-from bpy.props import *
-from bpy.types import PropertyGroup, Panel, Operator
+from bpy.props import BoolProperty, EnumProperty, PointerProperty
+from bpy.types import Operator, Panel, PropertyGroup
 from bpy.utils import previews
-from . import addon_updater_ops
+
+import bpy
 
 
 # Materials panel
@@ -41,8 +41,6 @@ class PBRMATERIAL_PT_Panel(Panel):
 	def draw(self, context):
 		settings = context.scene.pbr_material_settings
 		layout = self.layout
-		# Updater
-		addon_updater_ops.check_for_update_background()
 		scn = bpy.context.scene
 		layout.enabled = settings.enabled
 		# Category
@@ -64,9 +62,6 @@ class PBRMATERIAL_PT_Panel(Panel):
 		row = col.row(align=True)
 		row.alignment = 'CENTER'
 		row.label(text=material_name)
-
-		# Updater
-		addon_updater_ops.update_notice_box_ui(self, context)
 
 
 # Material Nodes panel
@@ -111,7 +106,6 @@ class PBRMATERIAL_PT_PanelNode(Panel):
 		row.label(text=texture_name)
 
 
-# Add material
 def add_material(self, context):
 	settings = context.scene.pbr_material_settings
 	path = os.path.join(os.path.dirname(__file__), "blends/dielectrics.blend")
@@ -423,7 +417,6 @@ def add_material(self, context):
 		princi.inputs[7].default_value = (0.1)
 
 
-# Append material nodes
 def append_material_node(self, context):
 	settings = context.scene.pbr_material_settings
 	path = os.path.join(os.path.dirname(__file__), "blends/dielectrics.blend")
@@ -724,7 +717,6 @@ def append_material_node(self, context):
 		princi.inputs[7].default_value = (0.1)
 
 
-# Append texture nodes
 def append_texture_node_group(self, context):
 	path = os.path.join(os.path.dirname(__file__), "blends/textures.blend")
 	with bpy.data.libraries.load(path, False) as (data_from, data_to):
@@ -739,7 +731,6 @@ def append_texture_node_group(self, context):
 	group.location = bpy.context.space_data.edit_tree.view_center
 
 
-# Principled Materials
 def principled(node_name, active_mat, output):
 	principled = active_mat.node_tree.nodes.new("ShaderNodeBsdfPrincipled")
 	principled.name = node_name
@@ -749,7 +740,6 @@ def principled(node_name, active_mat, output):
 	return principled
 
 
-# Principled Nodes
 def principled_nodes(node_name, active_mat):
 	principled = active_mat.node_tree.nodes.new("ShaderNodeBsdfPrincipled")
 	principled.name = node_name
@@ -759,7 +749,6 @@ def principled_nodes(node_name, active_mat):
 	return principled
 
 
-# RGB Materials
 def rgb(principled, active_mat):
 	rgbnode = active_mat.node_tree.nodes.new("ShaderNodeRGB")
 	rgbnode.location = (-200, 0)
@@ -767,7 +756,6 @@ def rgb(principled, active_mat):
 	return rgbnode
 
 
-# RGB Nodes
 def rgb_nodes(principled, active_mat):
 	rgbnode = active_mat.node_tree.nodes.new("ShaderNodeRGB")
 	rgbnode.location.x = principled.location.x-200
@@ -776,14 +764,12 @@ def rgb_nodes(principled, active_mat):
 	return rgbnode
 
 
-# Group
 def groupnode(node_name, active_mat, output):
 	group = active_mat.node_tree.nodes.new("ShaderNodeGroup")
 	group.node_tree = bpy.data.node_groups[node_name]
 	active_mat.node_tree.links.new(group.outputs[0], output.inputs[0])
 
 
-# Previews of materials
 def generate_previews(metals):
 	if metals:
 		previews = preview_collections["pbr_materials_metals"]
@@ -800,7 +786,6 @@ def generate_previews(metals):
 	return enum_items
 
 
-# Previews of nodes
 def generate_previews_nodes(metals):
 	if metals:
 		previews = preview_collections_nodes["pbr_materials_metals_node"]
@@ -817,7 +802,6 @@ def generate_previews_nodes(metals):
 	return enum_items
 
 
-# Previews of textures
 def generate_previews_tex():
 	previews = preview_collections_tex["pbr_textures"]
 	image_location = previews.images_location
@@ -831,7 +815,6 @@ def generate_previews_tex():
 	return enum_items
 
 
-# Enable
 def addon_toggle(self, context):
 	settings = context.scene.pbr_material_settings
 	# If the Checkbox is OFF, add basic Principled
@@ -857,21 +840,21 @@ def addon_toggle(self, context):
 		add_material(self, context)
 
 
-# Settings
+# Properties
 class PBRMaterialSettings(PropertyGroup):
-	category : bpy.props.EnumProperty(
+	category : EnumProperty(
 		items=[('d', 'Dielectric', 'Dielectric Materials'),
 				('m', 'Metal', 'Metal Materials')],
 		description="Type of Material",
 		default='d'
 		)
-	category_node : bpy.props.EnumProperty(
+	category_node : EnumProperty(
 		items=[('d', 'Dielectric', 'Show dielectric materials'),
 				('m', 'Metal', 'Show metallic materials')],
 		description="Choose the category for materials",
 		default='d'
 		)
-	enabled : bpy.props.BoolProperty(
+	enabled : BoolProperty(
 		name="Enabled",
 		description="Use PBR Materials Addon",
 		default=False,
@@ -879,49 +862,10 @@ class PBRMaterialSettings(PropertyGroup):
 		)
 
 
-# Preferences
-@addon_updater_ops.make_annotations
-class PBRMaterialsPreferences(bpy.types.AddonPreferences):
-	bl_idname = __package__
-
-	auto_check_update = bpy.props.BoolProperty(
-		name="Auto-check for Update",
-		description="If enabled, auto-check for updates using an interval",
-		default=True,
-		)
-	updater_intrval_months = bpy.props.IntProperty(
-		name='Months',
-		description="Number of months between checking for updates",
-		default=0,
-		min=0
-		)
-	updater_intrval_days = bpy.props.IntProperty(
-		name='Days',
-		description="Number of days between checking for updates",
-		default=1,
-		min=0,
-		max=31
-		)
-	updater_intrval_hours = bpy.props.IntProperty(
-		name='Hours',
-		description="Number of hours between checking for updates",
-		default=0,
-		min=0,
-		max=23
-		)
-	updater_intrval_minutes = bpy.props.IntProperty(
-		name='Minutes',
-		description="Number of minutes between checking for updates",
-		default=0,
-		min=0,
-		max=59
-		)
-
 	def draw(self, context):
 		layout = self.layout
 		mainrow = layout.row()
 		col = mainrow.column()
-		addon_updater_ops.update_settings_ui(self, context)
 
 
 preview_collections = {}
@@ -929,26 +873,20 @@ preview_collections_nodes = {}
 preview_collections_tex = {}
 
 
-###############################################################################################
-
+#############################################################################################
 classes = (
 	PBRMATERIAL_PT_Panel,
 	PBRMATERIAL_PT_PanelNode,
-	PBRMaterialSettings,
-	PBRMaterialsPreferences
+	PBRMaterialSettings
 	)
 
 register, unregister = bpy.utils.register_classes_factory(classes)
 
 
-# Register
 def register():
-	addon_updater_ops.register(bl_info)
 	for cls in classes:
-		# Updater
-		addon_updater_ops.make_annotations(cls)
 		bpy.utils.register_class(cls)
-	bpy.types.Scene.pbr_material_settings = bpy.props.PointerProperty(type=PBRMaterialSettings)
+	bpy.types.Scene.pbr_material_settings = PointerProperty(type=PBRMaterialSettings)
 	# Materials
 	previews_mat_metals = bpy.utils.previews.new()
 	previews_mat_dielectrics = bpy.utils.previews.new()
@@ -967,31 +905,31 @@ def register():
 	preview_collections_tex['pbr_textures'] = previews_tex
 
 	# Previews Dielectrics and Metals
-	bpy.types.Scene.thumbs_mats_metals = bpy.props.EnumProperty(
+	bpy.types.Scene.thumbs_mats_metals = EnumProperty(
 		items=generate_previews(True),
 		description="Choose the material you want to use",
 		update=add_material,
 		default='Gold'
 		)
-	bpy.types.Scene.thumbs_mats_dielectrics = bpy.props.EnumProperty(
+	bpy.types.Scene.thumbs_mats_dielectrics = EnumProperty(
 		items=generate_previews(False),
 		description="Choose the material you want to use",
 		update=add_material,
 		default='Dielectric'
 		)
-	bpy.types.Scene.thumbs_mats_metals_node = bpy.props.EnumProperty(
+	bpy.types.Scene.thumbs_mats_metals_node = EnumProperty(
 		items=generate_previews_nodes(True),
 		description="Choose the material you want to use",
 		update=append_material_node,
 		default='Gold'
 		)
-	bpy.types.Scene.thumbs_mats_dielectrics_node = bpy.props.EnumProperty(
+	bpy.types.Scene.thumbs_mats_dielectrics_node = EnumProperty(
 		items=generate_previews_nodes(False),
 		description="Choose the material you want to use",
 		update=append_material_node,
 		default='Dielectric'
 		)
-	bpy.types.Scene.thumbs_tex = bpy.props.EnumProperty(
+	bpy.types.Scene.thumbs_tex = EnumProperty(
 		items=generate_previews_tex(),
 		description="Choose the texture you want to use",
 		default="Scratches Texture",
@@ -1000,8 +938,6 @@ def register():
 
 
 def unregister():
-	# Updater
-	addon_updater_ops.unregister()
 	for cls in classes:
 		bpy.utils.unregister_class(cls)
 	del bpy.types.Scene.pbr_material_settings
@@ -1017,3 +953,7 @@ def unregister():
 	del bpy.types.Scene.thumbs_mats_dielectrics_node
 	del bpy.types.Scene.thumbs_tex
 	preview_collections.clear()
+
+
+if __name__ == "__main__":
+	register()
